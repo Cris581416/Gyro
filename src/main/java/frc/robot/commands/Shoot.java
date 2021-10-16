@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.Robot;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Shooter;
@@ -39,16 +40,20 @@ public class Shoot extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    Hopper.shoot = true;
+    /*Hopper.shoot = true;
 
     shooter.setSpeed(shootSpeed);
 
     if(kickerTimer.get() > 3.0){
       shooter.setKicker(-shootSpeed);
-    }
+    }*/
 
-    //shooter.setTurret(turnSpeed);
+    double turnSpeed = RobotContainer.driveController.getX(Hand.kRight);
+    double hoodSpeed = RobotContainer.driveController.getY(Hand.kLeft);
+
+    shooter.setTurret(turnSpeed);
     //shooter.setHood(hoodSpeed);
+    shooter.setKicker(hoodSpeed);
   }
 
   // Called once the command ends or is interrupted.

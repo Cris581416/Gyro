@@ -49,8 +49,8 @@ public class RobotContainer {
     configureButtonBindings();
 
     m_drivetrain.setDefaultCommand(new Drive(m_drivetrain));
-    //m_shooter.setDefaultCommand(new Shoot(m_shooter));
-    m_hopper.setDefaultCommand(new Revolve(m_hopper));
+    m_shooter.setDefaultCommand(new Shoot(m_shooter));
+    //m_hopper.setDefaultCommand(new Revolve(m_hopper));
     //m_intake.setDefaultCommand(new Slurp(m_intake));
   }
 
@@ -62,9 +62,9 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
 
-    hopperButton.whenPressed(new Spindex(m_hopper));
-    intakeButton.whileHeld(new Slurp(m_intake));
-    shooterButton.whileHeld(new Shoot(m_shooter));
+    //hopperButton.whenPressed(new Spindex(m_hopper));
+    //intakeButton.whileHeld(new Slurp(m_intake));
+    //shooterButton.whileHeld(new Shoot(m_shooter));
     
   }
 
