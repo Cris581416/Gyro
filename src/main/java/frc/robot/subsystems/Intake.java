@@ -14,13 +14,29 @@ public class Intake extends SubsystemBase {
 
   WPI_TalonFX intake;
 
+
+
   public Intake() {
     intake = new WPI_TalonFX(Constants.intake);
   }
 
-  public void setIntake(double speed){
+
+
+  public void set(double speed){
+    double limit = 0.5;
+
+    if(Math.abs(speed) > limit){speed = limit * speed / Math.abs(speed);}
+
     intake.set(speed);
   }
+
+
+
+  public void stop(){
+    set(0.0);
+  }
+
+  
 
   @Override
   public void periodic() {

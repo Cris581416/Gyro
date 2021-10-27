@@ -4,34 +4,40 @@
 
 package frc.robot.commands;
 
+import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.subsystems.Hopper;
+import frc.robot.RobotContainer;
+import frc.robot.subsystems.Turret;
 
-public class Spindex extends CommandBase {
-  /** Creates a new Spindex. */
+public class ManualTurretTurn extends CommandBase {
+  /** Creates a new ManualTurretTurn. */
 
-  Hopper hopper;
+  @SuppressWarnings({ "PMD.UnusedPrivateField", "PMD.SingularField" })
 
-  public Spindex(Hopper m_hopper) {
+  Turret turret;
+
+  public ManualTurretTurn(Turret m_turret) {
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(m_hopper);
-    hopper = m_hopper;
+    addRequirements(m_turret);
+    turret = m_turret;
   }
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    hopper.spin = !hopper.spin;
 
-    if(hopper.spin){
-      hopper.set(hopper.indexSpeed);
-    } else{
-      hopper.set(0.0);
-    }
+    double turnSpeed = RobotContainer.mechController.getX(Hand.kRight);
+
+    turret.set(turnSpeed);
+
+    RobotContainer.telemetry.turret.updateEntry("Position", turret.getPosition());
+
+    System.out.println("Turret Position: " + turret.getPosition());
 
   }
 
@@ -42,6 +48,6 @@ public class Spindex extends CommandBase {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return true;
+    return false;
   }
 }

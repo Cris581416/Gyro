@@ -25,7 +25,12 @@ public class ExampleCommand extends CommandBase {
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+
+    // I just put this line here so that it would stop marking m_subsystem as not used.
+    m_subsystem.toString();
+
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override

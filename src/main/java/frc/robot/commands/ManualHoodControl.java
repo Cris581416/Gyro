@@ -4,37 +4,44 @@
 
 package frc.robot.commands;
 
+import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.subsystems.Intake;
+import frc.robot.RobotContainer;
+import frc.robot.subsystems.Hood;
 
-public class Slurp extends CommandBase {
-  /** Creates a new Slurp. */
+public class ManualHoodControl extends CommandBase {
+  /** Creates a new ManualHoodControl. */
 
-  Intake intake;
+  Hood hood;
 
-  public Slurp(Intake m_intake) {
+  public ManualHoodControl(Hood m_hood) {
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(m_intake);
-    intake = m_intake;
+    addRequirements(m_hood);
+    hood = m_hood;
   }
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
 
-    intake.set(0.5);
+    double hoodSpeed = RobotContainer.mechController.getY(Hand.kLeft);
+
+    hood.set(hoodSpeed);
+
+    RobotContainer.telemetry.hood.updateEntry("Position", hood.getPosition());
+
+    System.out.println("Hood Position: " + hood.getPosition());
 
   }
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {
-    intake.stop();
-  }
+  public void end(boolean interrupted) {}
 
   // Returns true when the command should end.
   @Override

@@ -4,9 +4,8 @@
 
 package frc.robot.subsystems;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -14,49 +13,68 @@ import frc.robot.Constants;
 public class Shooter extends SubsystemBase {
   /** Creates a new Shooter. */
 
+  public enum States {REVVING, SHOOTING, STOPPED}
+
+  public static States STATE = States.STOPPED;
+
   WPI_TalonFX shooterMotor1;
   WPI_TalonFX shooterMotor2;
 
-  WPI_TalonSRX hood;
-
-  WPI_TalonSRX turret;
 
   WPI_TalonFX kicker;
+
+
 
   public Shooter() {
 
     shooterMotor1 = new WPI_TalonFX(Constants.shooterMotor1);
     shooterMotor2 = new WPI_TalonFX(Constants.shooterMotor2);
 
-    hood = new WPI_TalonSRX(Constants.hood);
-
-    turret = new WPI_TalonSRX(Constants.turret);
+    shooterMotor1.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor);
+    shooterMotor2.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor);
 
     kicker = new WPI_TalonFX(Constants.kicker);
   }
 
+
+
   public void setSpeed(double speed){
+    double limit = 1.0;
+
+    if(Math.abs(speed) > limit){speed = limit * speed / Math.abs(speed);}
+
     shooterMotor1.set(speed);
     shooterMotor2.set(-speed);
   }
 
-  public void setHood(double speed){
-    hood.set(speed);
-  }
 
-  public void setTurret(double speed){
-    turret.set(speed);
-  }
 
   public void setKicker(double speed){
     kicker.set(speed);
   }
 
+
+
+  public double getVelocity(){
+    double tickVel1 = shooterMotor1.getSelectedSensorVelocity();
+    double tickVel2 = -shooterMotor2.getSelectedSensorVelocity();
+
+    double rpm1= tickVel1 * 600.0 * Constants.THROUGH_BORE_ENCODER_REVS_PER_TICK;
+    double rpm2 = tickVel2 * 600.0 * Constants.THROUGH_BORE_ENCODER_REVS_PER_TICK;
+
+    double velocity = (rpm1 + rpm2) / 2.0;
+
+    return velocity;
+  }
+
+
+
   public void stop(){
     setSpeed(0.0);
-    setTurret(0.0);
     setKicker(0.0);
   }
+
+
 
   @Override
   public void periodic() {

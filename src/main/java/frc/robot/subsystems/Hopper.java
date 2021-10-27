@@ -12,27 +12,44 @@ import frc.robot.Constants;
 public class Hopper extends SubsystemBase {
   /** Creates a new Hopper. */
 
-  WPI_TalonFX hopper;
+  public static enum States {FEEDING, INDEXING, REVERSED, STOPPED}
 
-  public static boolean shoot;
-  public boolean spin;
+  public static States STATE = States.STOPPED;
+
+  WPI_TalonFX hopper;
 
   public double indexSpeed = 0.15;
   public double shootSpeed = -0.2;
 
+
+
   public Hopper() {
     hopper = new WPI_TalonFX(Constants.hopper);
-
-    spin = false;
   }
+
+
 
   public void set(double speed){
+    double limit = 0.5;
+
+    if(Math.abs(speed) > limit){speed = limit * speed / Math.abs(speed);}
+
     hopper.set(speed);
   }
+
+
 
   public double getCurrentDraw(){
     return hopper.getSupplyCurrent();
   }
+
+
+
+  public void stop(){
+    set(0.0);
+  }
+  
+
 
   @Override
   public void periodic() {

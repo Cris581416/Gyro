@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -16,6 +17,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.kauailabs.navx.frc.AHRS;
 
 import frc.robot.Constants;
+import frc.robot.States;
 
 public class Drivetrain extends SubsystemBase {
   /** Creates a new Drivetrain. */
@@ -33,7 +35,7 @@ public class Drivetrain extends SubsystemBase {
 
   DifferentialDriveOdometry odometry;
 
-  Pose2d pose;
+  public static Pose2d pose;
 
   public Compressor compressor;
 
@@ -65,8 +67,11 @@ public class Drivetrain extends SubsystemBase {
     compressor = new Compressor();
   }
 
+
+
   public void arcadeDrive(double throttle, double turn){
 
+    /*
     double throttleDirection = 1.0;
     double turnDirection = 1.0;
 
@@ -90,18 +95,25 @@ public class Drivetrain extends SubsystemBase {
 
     throttle = slope * throttle + throttleDirection * intercept;
     turn = slope * turn + turnDirection * intercept;
-
+    */
     
     drivetrain.arcadeDrive(throttle, turn);
   }
 
+
+
   public void curvatureDrive(double throttle, double turn){
-    drivetrain.curvatureDrive(throttle, turn, throttle == 0.0);
+
+    drivetrain.curvatureDrive(throttle, turn, Math.abs(throttle) < 0.1);
   }
 
+
+  
   public void stop(){
     arcadeDrive(0.0, 0.0);
   }
+
+
 
   public double getTicks(String side){
     double averageTicks = 0.0;
@@ -115,14 +127,59 @@ public class Drivetrain extends SubsystemBase {
     return averageTicks;
   }
 
-  public Pose2d getPose(){
+
+
+  public static Pose2d getPose(){
     return pose;
   }
+
+  
+
+  public double getDistance(){
+    Translation2d goalPos = States.getGoalPosition();
+
+    double deltaX = Math.abs(pose.getX() - goalPos.getX());
+    double deltaY = Math.abs(pose.getY() - goalPos.getY());
+
+    double distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+    return distance;
+  }
+
+
+
+  public static double getAngleToGoal(){
+
+    Translation2d goalPos = States.getGoalPosition();
+
+    double deltaX = Math.abs(pose.getX() - goalPos.getX());
+    double deltaY = Math.abs(pose.getY() - goalPos.getY());
+
+    double phi = Math.atan(deltaX / deltaY);
+
+    double drivetrainToTarget;
+
+    if(pose.getX() >= goalPos.getX()){
+
+      drivetrainToTarget = 180 - phi + pose.getRotation().getDegrees();
+
+    } else{
+
+      drivetrainToTarget = 180 + phi + pose.getRotation().getDegrees();
+
+    }
+
+    return drivetrainToTarget;
+  }
+
+
 
   public void resetPose(){
     odometry.resetPosition(new Pose2d(), new Rotation2d());
     resetSensors();
   }
+
+
 
   public void resetSensors(){
     topLeftMotor.setSelectedSensorPosition(0.0);
@@ -133,6 +190,8 @@ public class Drivetrain extends SubsystemBase {
     navX.reset();
   }
 
+
+
   public double readEncoders() {
     return topLeftMotor.getSelectedSensorPosition();
     //return topRightMotor.getSelectedSensorPosition();
@@ -140,6 +199,8 @@ public class Drivetrain extends SubsystemBase {
     //return bottomRightMotor.getSelectedSensorPosition();
     //return navX.getRotation2d().getDegrees();
   }
+
+
 
   @Override
   public void periodic() {
@@ -153,31 +214,18 @@ public class Drivetrain extends SubsystemBase {
     double rightTicks = getTicks("right");
 
     double ticksPerRotation = 2048.0;
-    double wheelCircumference = 6.0 * Math.PI;
+    double wheelCircumference = 4.0 * Math.PI;
 
     // Measurements taken by going forward 5 feet
-    double motorRotations = 59653.66 / ticksPerRotation;
-    double wheelRotations = 60.0 / wheelCircumference;
+    // double motorRotations = 59653.66 / ticksPerRotation;
+    // double wheelRotations = 60.0 / wheelCircumference;
     
     // How much the motor rotated vs how much the wheel rotated
-    double gearRatio = motorRotations / wheelRotations;
+    double gearRatio = 60 / 8;
 
-    // Rotations * wheel circumference = distance traveled. (dividing by gearRatio converts motor rotations to wheel rotations)
+    // Rotations * wheel circumference = distance (in.) traveled. (dividing by gearRatio converts motor rotations to wheel rotations)
     double leftMeters = (leftTicks / ticksPerRotation) * wheelCircumference / gearRatio;
     double rightMeters = (rightTicks / ticksPerRotation) * wheelCircumference / gearRatio;
-    //leftMeters *= 0.0254;
-    //rightMeters *= 0.0254;
-
-    /*
-    double ticksPerInch = 997.06; //NEED TO FIND EXACT TICKS PER INCH
-    double inchesPerMeter = 0.0254;
-
-    double ticksPerMeter = ticksPerInch / inchesPerMeter;
-
-    // ticks / ticks per revolution = number of revolutions,   number of revolutions * circumference = distance traveled
-    double leftMeters = ((leftTicks / ticksPerMeter));
-    double rightMeters = ((rightTicks / ticksPerMeter));
-    */
 
     // Update the pose
     var gyroAngle = Rotation2d.fromDegrees(-navX.getAngle() - gyroOffset);

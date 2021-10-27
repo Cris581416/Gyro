@@ -5,17 +5,13 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Hopper;
 
-public class Slurp extends CommandBase {
-  /** Creates a new Slurp. */
+public class SwitchHopperMode extends CommandBase {
+  /** Creates a new SwitchHopperMode. */
 
-  Intake intake;
-
-  public Slurp(Intake m_intake) {
+  public SwitchHopperMode() {
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(m_intake);
-    intake = m_intake;
   }
 
   // Called when the command is initially scheduled.
@@ -26,19 +22,25 @@ public class Slurp extends CommandBase {
   @Override
   public void execute() {
 
-    intake.set(0.5);
+    if(Hopper.STATE == Hopper.States.STOPPED) {
+
+      Hopper.STATE = Hopper.States.INDEXING;
+
+    } else{
+
+      Hopper.STATE = Hopper.States.STOPPED;
+      
+    }
 
   }
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {
-    intake.stop();
-  }
+  public void end(boolean interrupted) {}
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false;
+    return true;
   }
 }

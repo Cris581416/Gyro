@@ -4,9 +4,10 @@
 
 package frc.robot.commands;
 
-
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.RobotContainer;
+import frc.robot.TabData;
 import frc.robot.subsystems.Hopper;
 
 public class Revolve extends CommandBase {
@@ -17,6 +18,8 @@ public class Revolve extends CommandBase {
 
   boolean firstJam = false;
   boolean unjamming = false;
+
+  TabData hopperData = RobotContainer.telemetry.hopper;
 
   Timer timer = new Timer();
   double time = 1.0;
@@ -36,46 +39,57 @@ public class Revolve extends CommandBase {
   @Override
   public void execute() {
 
-    System.out.println("In Unjam:");
+    hopperData.updateEntry("State", Hopper.STATE.name());
 
+    //---------------------------------------------------------------------------
+    if(Hopper.STATE == Hopper.States.STOPPED) {
 
-    if(hopper.getCurrentDraw() > 4.0 && time >= 1.0){
-      firstJam = true;
-      unjamming = true;
+      hopper.stop();
+    
+    //---------------------------------------------------------------------------
+    } else if(Hopper.STATE == Hopper.States.INDEXING) {
 
-      System.out.println("Jamming!");
+      hopperData.updateEntry("Current Draw", hopper.getCurrentDraw());
 
-      timer.reset();
-      timer.start();
+      hopper.set(hopper.indexSpeed);
 
-      hopper.indexSpeed *= -1;
-      hopper.shootSpeed *= -1;
+      if(Math.abs(hopper.getCurrentDraw()) > 4.0 && time >= 1.0){
+        firstJam = true;
+        Hopper.STATE = Hopper.States.REVERSED;
+    
+        timer.reset();
+        timer.start();
+    
+        hopper.indexSpeed *= -1;
 
-      if(Hopper.shoot){
-        hopper.set(hopper.shootSpeed);
-      } else if(hopper.spin){
         hopper.set(hopper.indexSpeed);
       }
-    } else if(!unjamming){
-      if(Hopper.shoot){
-        hopper.set(hopper.shootSpeed);
-      } else if(hopper.spin){
+    //---------------------------------------------------------------------------
+
+    } else if(Hopper.STATE == Hopper.States.REVERSED){
+
+      hopper.set(hopper.indexSpeed);
+
+      if((Math.abs(hopper.getCurrentDraw()) > 4.0 && time >= 1.0) || (time >= 4.0)){
+        Hopper.STATE = Hopper.States.INDEXING;
+    
+        timer.reset();
+        timer.start();
+    
+        hopper.indexSpeed *= -1;
+
         hopper.set(hopper.indexSpeed);
       }
-    }
 
-    if(unjamming && time >= 4.0){
-      unjamming = false;
-      timer.reset();
-      timer.start();
-      if(Hopper.shoot){
-        hopper.set(-Math.abs(hopper.shootSpeed));
-      } else if(hopper.spin){
-        hopper.set(Math.abs(hopper.indexSpeed));
-      }
-    }
+    //---------------------------------------------------------------------------
+    } else if(Hopper.STATE == Hopper.States.FEEDING) {
 
-    System.out.println("Timer timer: " + time);
+      hopper.set(hopper.shootSpeed);
+    
+    }
+    
+
+    //System.out.println("Timer timer: " + time);
 
     if(firstJam){
       time = timer.get();

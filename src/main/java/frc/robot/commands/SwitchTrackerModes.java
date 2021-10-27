@@ -5,17 +5,13 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Hood;
+import frc.robot.subsystems.Turret;
 
-public class Slurp extends CommandBase {
-  /** Creates a new Slurp. */
-
-  Intake intake;
-
-  public Slurp(Intake m_intake) {
+public class SwitchTrackerModes extends CommandBase {
+  /** Creates a new SwitchHoodMode. */
+  public SwitchTrackerModes() {
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(m_intake);
-    intake = m_intake;
   }
 
   // Called when the command is initially scheduled.
@@ -26,19 +22,27 @@ public class Slurp extends CommandBase {
   @Override
   public void execute() {
 
-    intake.set(0.5);
+    if(Turret.STATE == Turret.States.MANUAL) {
+
+      Turret.STATE = Turret.States.ALIGNING;
+      Hood.STATE = Hood.States.ALIGNING;
+
+    } else{
+
+      Turret.STATE = Turret.States.MANUAL;
+      Hood.STATE = Hood.States.RETRACTED;
+    
+    }  
 
   }
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {
-    intake.stop();
-  }
+  public void end(boolean interrupted) {}
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false;
+    return true;
   }
 }
