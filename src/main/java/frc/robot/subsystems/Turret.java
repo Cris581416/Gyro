@@ -7,6 +7,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import frc.robot.Constants.TurretConstants;
 import frc.robot.Constants;
 
 public class Turret extends SubsystemBase {
@@ -27,9 +28,9 @@ public class Turret extends SubsystemBase {
   public double minDegrees = -160.0;//ticksToDegrees(minEncoderTicks);
 
   public Turret() {
-    turret = new WPI_TalonSRX(Constants.turret);
+    turret = new WPI_TalonSRX(TurretConstants.turret);
 
-    encoder = new Encoder(Constants.turretEncoderA, Constants.turretEncoderB);
+    encoder = new Encoder(TurretConstants.turretEncoderA, TurretConstants.turretEncoderB);
 
     encoder.reset();
   }

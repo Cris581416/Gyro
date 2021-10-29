@@ -7,7 +7,7 @@ package frc.robot.subsystems;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
+import frc.robot.Constants.IntakeConstants;;
 
 public class Intake extends SubsystemBase {
   /** Creates a new Intake. */
@@ -17,7 +17,7 @@ public class Intake extends SubsystemBase {
 
 
   public Intake() {
-    intake = new WPI_TalonFX(Constants.intake);
+    intake = new WPI_TalonFX(IntakeConstants.intake);
   }
 
 

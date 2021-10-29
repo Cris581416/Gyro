@@ -9,6 +9,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.HoodConstants;
 
 public class Hood extends SubsystemBase {
   /** Creates a new Hood. */
@@ -31,9 +32,9 @@ public class Hood extends SubsystemBase {
 
 
   public Hood() {
-    hood = new WPI_TalonSRX(Constants.hood);
+    hood = new WPI_TalonSRX(HoodConstants.hood);
 
-    encoder = new Encoder(Constants.hoodEncoderA, Constants.hoodEncoderB);
+    encoder = new Encoder(HoodConstants.hoodEncoderA, HoodConstants.hoodEncoderB);
 
     encoder.setReverseDirection(true);
 

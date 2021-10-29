@@ -9,6 +9,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.ShooterConstants;
 
 public class Shooter extends SubsystemBase {
   /** Creates a new Shooter. */
@@ -27,13 +28,13 @@ public class Shooter extends SubsystemBase {
 
   public Shooter() {
 
-    shooterMotor1 = new WPI_TalonFX(Constants.shooterMotor1);
-    shooterMotor2 = new WPI_TalonFX(Constants.shooterMotor2);
+    shooterMotor1 = new WPI_TalonFX(ShooterConstants.shooterMotor1);
+    shooterMotor2 = new WPI_TalonFX(ShooterConstants.shooterMotor2);
 
     shooterMotor1.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor);
     shooterMotor2.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor);
 
-    kicker = new WPI_TalonFX(Constants.kicker);
+    kicker = new WPI_TalonFX(ShooterConstants.kicker);
   }
 
 

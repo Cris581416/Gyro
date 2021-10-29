@@ -16,6 +16,8 @@ import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.kauailabs.navx.frc.AHRS;
 
+import frc.robot.Constants.DTProperties;
+import frc.robot.Constants.DrivetrainConstants;
 import frc.robot.Constants;
 import frc.robot.States;
 
@@ -41,10 +43,10 @@ public class Drivetrain extends SubsystemBase {
 
   public Drivetrain() {
 
-    topLeftMotor = new WPI_TalonFX(Constants.topLeftMotor);
-    topRightMotor = new WPI_TalonFX(Constants.topRightMotor);
-    bottomLeftMotor = new WPI_TalonFX(Constants.bottomLeftMotor);
-    bottomRightMotor = new WPI_TalonFX(Constants.bottomRightMotor);
+    topLeftMotor = new WPI_TalonFX(DrivetrainConstants.topLeftMotor);
+    topRightMotor = new WPI_TalonFX(DrivetrainConstants.topRightMotor);
+    bottomLeftMotor = new WPI_TalonFX(DrivetrainConstants.bottomLeftMotor);
+    bottomRightMotor = new WPI_TalonFX(DrivetrainConstants.bottomRightMotor);
 
     bottomLeftMotor.follow(topLeftMotor);
     bottomRightMotor.follow(topRightMotor);
@@ -213,19 +215,15 @@ public class Drivetrain extends SubsystemBase {
     double leftTicks = getTicks("left");
     double rightTicks = getTicks("right");
 
-    double ticksPerRotation = 2048.0;
-    double wheelCircumference = 4.0 * Math.PI;
-
     // Measurements taken by going forward 5 feet
     // double motorRotations = 59653.66 / ticksPerRotation;
     // double wheelRotations = 60.0 / wheelCircumference;
     
     // How much the motor rotated vs how much the wheel rotated
-    double gearRatio = 60 / 8;
 
     // Rotations * wheel circumference = distance (in.) traveled. (dividing by gearRatio converts motor rotations to wheel rotations)
-    double leftMeters = (leftTicks / ticksPerRotation) * wheelCircumference / gearRatio;
-    double rightMeters = (rightTicks / ticksPerRotation) * wheelCircumference / gearRatio;
+    double leftMeters = leftTicks * DTProperties.kEncoderDistancePerPulse;
+    double rightMeters = rightTicks * DTProperties.kEncoderDistancePerPulse;
 
     // Update the pose
     var gyroAngle = Rotation2d.fromDegrees(-navX.getAngle() - gyroOffset);

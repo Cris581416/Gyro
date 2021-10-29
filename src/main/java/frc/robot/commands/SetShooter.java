@@ -31,6 +31,8 @@ public class SetShooter extends CommandBase {
 
   TabData shooterData = RobotContainer.telemetry.shooter;
 
+  boolean lastPressed = false;
+
   public SetShooter(Shooter m_shooter) {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(m_shooter);
@@ -63,6 +65,8 @@ public class SetShooter extends CommandBase {
 
     if(Shooter.STATE == Shooter.States.REVVING && pressed){
 
+      lastPressed = true;
+
       Hopper.STATE = Hopper.States.FEEDING;
 
       if(kP != adjustedkP || kI != adjustedkI || kD != adjustedkD){
@@ -93,6 +97,8 @@ public class SetShooter extends CommandBase {
     //---------------------------------------------------------------------------      
     } else if(Shooter.STATE == Shooter.States.SHOOTING && pressed){
 
+      lastPressed = true;
+
       Hopper.STATE = Hopper.States.FEEDING;
 
       shooterData.updateEntry("Setpoint", setpoint);
@@ -112,9 +118,15 @@ public class SetShooter extends CommandBase {
       shooter.setSpeed(0.0);
       shooter.setKicker(0.0);
 
+      if(lastPressed){
+        Hopper.STATE = Hopper.States.STOPPED;
+      }
+
       if(pressed){
         Shooter.STATE = Shooter.States.REVVING;
       }
+
+      lastPressed = false;
 
     } else{
 
