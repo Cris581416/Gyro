@@ -6,16 +6,21 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.controller.PIDController;
+import edu.wpi.first.wpilibj.geometry.Pose2d;
+import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.RobotContainer;
+import frc.robot.Shuphlebord;
 import frc.robot.TabData;
 import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Turret;
 
 public class AlignTurret extends CommandBase {
   /** Creates a new AlignTurret. */
+  @SuppressWarnings({ "PMD.UnusedPrivateField", "PMD.SingularField" })
 
   Turret turret;
+  Pose2d robotPose;
   private double kP = 0.07;
   private double kI = 0.0;
   private double kD = 0.0007;
@@ -23,7 +28,7 @@ public class AlignTurret extends CommandBase {
   private double setpoint = 0.0;
   private PIDController controller = new PIDController(kP, kI, kD);
 
-  TabData turretData = RobotContainer.telemetry.turret;
+  TabData turretData = Shuphlebord.turretData;
 
   public AlignTurret(Turret m_turret) {
     // Use addRequirements() here to declare subsystem dependencies.
@@ -44,16 +49,25 @@ public class AlignTurret extends CommandBase {
     turretData.updateEntry("Power", turretPower);
     turretData.updateEntry("State", Turret.STATE.name());
 
+    turretData.updateEntry("Adjust X", 0.0);
+    turretData.updateEntry("Adjust Y", 0.0);
+
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
 
+    turret.getCurrentDraw();
+
     double adjustedkP = (double) turretData.getEntryData("kP").getDouble();
     double adjustedkI = (double) turretData.getEntryData("kI").getDouble();
     double adjustedkD = (double) turretData.getEntryData("kD").getDouble();
 
+    double adjustedX = (double) turretData.getEntryData("Adjust X").getDouble();
+    double adjustedY = (double) turretData.getEntryData("Adjust Y").getDouble();
+
+    Translation2d testTarget = new Translation2d(adjustedX, adjustedY);
     
     //---------------------------------------------------------------------------
     if(Turret.STATE == Turret.States.ALIGNING) {
@@ -66,19 +80,15 @@ public class AlignTurret extends CommandBase {
         controller.setPID(kP, kI, kD);
       }
 
-      /*
       if(Limelight.hasTarget()){
 
         setpoint = turret.getPosition() + Limelight.getTx();
 
       } else{
 
-        setpoint = Drivetrain.getAngleToGoal() + turret.getPosition();
+        setpoint = turret.getValidPosition(turret.getAngleToGoal(RobotContainer.robotPose));
 
-      }*/
-
-      
-      setpoint = turret.getPosition() + Limelight.getTx();
+      }
 
       if(setpoint > turret.maxDegrees){
         setpoint = turret.maxDegrees;
@@ -100,7 +110,6 @@ public class AlignTurret extends CommandBase {
     //---------------------------------------------------------------------------
     } else if(Turret.STATE == Turret.States.MANUAL) {
 
-
       double turnSpeed = -RobotContainer.mechController.getX(Hand.kRight);
 
       double pos = turret.getPosition();
@@ -112,7 +121,6 @@ public class AlignTurret extends CommandBase {
       }
       
       turret.set(turnSpeed);
-
 
     }
 

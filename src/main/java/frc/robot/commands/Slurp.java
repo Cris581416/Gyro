@@ -5,6 +5,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Intake;
 
 public class Slurp extends CommandBase {
@@ -26,6 +27,12 @@ public class Slurp extends CommandBase {
   @Override
   public void execute() {
 
+    Hopper.STATE = Hopper.States.INDEXING;
+
+    intake.getCurrentDraw();
+
+    //intake.setCylinder(true);
+
     intake.set(0.5);
 
   }
@@ -34,6 +41,7 @@ public class Slurp extends CommandBase {
   @Override
   public void end(boolean interrupted) {
     intake.stop();
+    intake.setCylinder(false);
   }
 
   // Returns true when the command should end.

@@ -8,12 +8,15 @@ import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.RobotContainer;
+import frc.robot.Shuphlebord;
 import frc.robot.TabData;
+import frc.robot.Constants.HoodConstants;
 import frc.robot.subsystems.Hood;
 import frc.robot.subsystems.Limelight;
 
 public class AlignHood extends CommandBase {
   /** Creates a new AlignHood. */
+  @SuppressWarnings({ "PMD.UnusedPrivateField", "PMD.SingularField" })
 
   Hood hood;
   private double kP = 0.1;
@@ -23,7 +26,7 @@ public class AlignHood extends CommandBase {
   private double setpoint = 0;
   private PIDController controller = new PIDController(kP, kI, kD);
 
-  TabData hoodData = RobotContainer.telemetry.hood;
+  TabData hoodData = Shuphlebord.hoodData;
 
   public AlignHood(Hood m_hood) {
     // Use addRequirements() here to declare subsystem dependencies.
@@ -43,16 +46,20 @@ public class AlignHood extends CommandBase {
     hoodData.updateEntry("Position", hood.getPosition());
     hoodData.updateEntry("Power", hoodPower);
     hoodData.updateEntry("State", Hood.STATE.name());
+    hoodData.updateEntry("AdjAngle", 30.0);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
 
-    
+    hood.getCurrentDraw();
+
     double adjustedkP = hoodData.getEntryData("kP").getDouble();
     double adjustedkI = hoodData.getEntryData("kI").getDouble();
     double adjustedkD = hoodData.getEntryData("kD").getDouble();
+
+    double adjustedAngle = hoodData.getEntryData("AdjAngle").getDouble();
     
     
     //---------------------------------------------------------------------------
@@ -67,9 +74,7 @@ public class AlignHood extends CommandBase {
         controller.setPID(kP, kI, kD);
       }
 
-      //double distance = Limelight.getDistance();
-
-      setpoint = 35.0;//hood.calculateAngle(distance);
+      setpoint = adjustedAngle;//hood.calculateAngle();
 
       if(setpoint > hood.maxDegrees){
         setpoint = hood.maxDegrees;

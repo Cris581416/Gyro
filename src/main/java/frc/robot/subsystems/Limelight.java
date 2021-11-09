@@ -84,18 +84,10 @@ public class Limelight extends SubsystemBase {
     return displacement;
   }
 
-  /*
+  
   public static boolean hasTarget(){
-
-
-    if(tv == 1.0){
-
-      if()
-
-    }
-
-    return false;
-  }*/
+    return tv == 1.0;
+  }
 
 
 

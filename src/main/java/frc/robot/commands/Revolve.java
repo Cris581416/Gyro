@@ -7,6 +7,7 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.RobotContainer;
+import frc.robot.Shuphlebord;
 import frc.robot.TabData;
 import frc.robot.subsystems.Hopper;
 
@@ -19,7 +20,7 @@ public class Revolve extends CommandBase {
   boolean firstJam = false;
   boolean unjamming = false;
 
-  TabData hopperData = RobotContainer.telemetry.hopper;
+  TabData hopperData = Shuphlebord.hopperData;
 
   Timer timer = new Timer();
   double time = 1.0;
@@ -38,6 +39,8 @@ public class Revolve extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+
+    hopper.getCurrentDraw();
 
     hopperData.updateEntry("State", Hopper.STATE.name());
 

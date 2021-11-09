@@ -7,6 +7,8 @@ package frc.robot.subsystems;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Shuphlebord;
+import frc.robot.TabData;
 import frc.robot.Constants.HopperConstants;
 
 public class Hopper extends SubsystemBase {
@@ -32,7 +34,7 @@ public class Hopper extends SubsystemBase {
   public void set(double speed){
     double limit = 0.5;
 
-    if(Math.abs(speed) > limit){speed = limit * speed / Math.abs(speed);}
+    if(Math.abs(speed) > limit){speed = limit * Math.signum(speed);}
 
     hopper.set(speed);
   }
@@ -40,7 +42,13 @@ public class Hopper extends SubsystemBase {
 
 
   public double getCurrentDraw(){
+
+    TabData data = Shuphlebord.powerData;
+
+    data.updateEntry("Hopper", hopper.getSupplyCurrent());
+
     return hopper.getSupplyCurrent();
+
   }
 
 

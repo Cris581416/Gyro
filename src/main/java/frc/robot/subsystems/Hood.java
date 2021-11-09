@@ -7,8 +7,14 @@ package frc.robot.subsystems;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.geometry.Pose2d;
+import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Goals;
+import frc.robot.RobotContainer;
+import frc.robot.Shuphlebord;
+import frc.robot.TabData;
 import frc.robot.Constants.HoodConstants;
 
 public class Hood extends SubsystemBase {
@@ -46,7 +52,7 @@ public class Hood extends SubsystemBase {
   public void set(double speed){
     double limit = 0.35;
 
-    if(Math.abs(speed) > limit){speed = limit * (speed / Math.abs(speed));}
+    if(Math.abs(speed) > limit){speed = limit * Math.signum(speed);}
 
     hood.set(speed);
   }
@@ -85,15 +91,30 @@ public class Hood extends SubsystemBase {
 
 
 
-  /**
-   @param distance Distance to use when calculating hood angle
-   @return Angle to set hood to
-   */
-  public double calculateAngle(double distance){
+  public double calculateAngle(){
     return 0.0;
   }
 
 
+
+  /**
+   * 
+   * @return The distance between the goal and the robot.
+   */
+  public double getDistance(){
+    Translation2d goalPos = Goals.getGoalPosition();
+
+    Pose2d pose = RobotContainer.robotPose;
+
+    double deltaX = Math.abs(pose.getX() - goalPos.getX());
+    double deltaY = Math.abs(pose.getY() - goalPos.getY());
+
+    double distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+    return distance;
+  }
+
+  
   
   public double getTicks(){
     return encoder.get();
@@ -115,6 +136,17 @@ public class Hood extends SubsystemBase {
     return degrees;
   }
 
+
+
+  public double getCurrentDraw(){
+
+    TabData data = Shuphlebord.powerData;
+
+    data.updateEntry("Hood", hood.getSupplyCurrent());
+
+    return hood.getSupplyCurrent();
+
+  }
 
 
   @Override

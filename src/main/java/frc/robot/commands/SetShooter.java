@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.RobotContainer;
+import frc.robot.Shuphlebord;
 import frc.robot.TabData;
 import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Shooter;
@@ -22,14 +23,14 @@ public class SetShooter extends CommandBase {
 
   Timer kickerTimer = new Timer();
 
-  private double kP = 0.1;
+  private double kP = 0.08;
   private double kI = 0.0045;
-  private double kD = 0.0025;
+  private double kD = 0.0065;
   private double shooterPower = 0.0;
   private double setpoint = 0;
   private PIDController controller = new PIDController(kP, kI, kD);
 
-  TabData shooterData = RobotContainer.telemetry.shooter;
+  TabData shooterData = Shuphlebord.shooterData;
 
   boolean lastPressed = false;
 
@@ -43,7 +44,6 @@ public class SetShooter extends CommandBase {
   @Override
   public void initialize() {
     kickerTimer.reset();
-    kickerTimer.start();
 
     shooterData.updateEntry("kP", kP);
     shooterData.updateEntry("kI", kI);
@@ -51,19 +51,26 @@ public class SetShooter extends CommandBase {
     shooterData.updateEntry("Velocity", shooter.getVelocity());
     shooterData.updateEntry("Power", shooterPower);
     shooterData.updateEntry("State", Shooter.STATE.name());
+    shooterData.updateEntry("Setpoint", -4400.0);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
 
+    shooter.getCurrentDraw();
+
     double adjustedkP = (double) shooterData.getEntryData("kP").getDouble();
     double adjustedkI = (double) shooterData.getEntryData("kI").getDouble();
     double adjustedkD = (double) shooterData.getEntryData("kD").getDouble();
 
-    boolean pressed = RobotContainer.mechController.getTriggerAxis(Hand.kRight) != 0.0;
+    double adjustedSetpoint = (double) shooterData.getEntryData("AdjSetpoint").getDouble();
 
-    if(Shooter.STATE == Shooter.States.REVVING && pressed){
+    boolean pressed = RobotContainer.driveController.getTriggerAxis(Hand.kRight) != 0.0;
+
+    if(Shooter.STATE == Shooter.States.REVVING && (pressed || Shooter.AUTO)){
+
+      kickerTimer.start();
 
       lastPressed = true;
 
@@ -77,7 +84,7 @@ public class SetShooter extends CommandBase {
         controller.setPID(kP, kI, kD);
       }
 
-      setpoint = -4400.0;
+      setpoint = adjustedSetpoint;
 
       controller.setSetpoint(setpoint);
 
@@ -95,7 +102,7 @@ public class SetShooter extends CommandBase {
       }
 
     //---------------------------------------------------------------------------      
-    } else if(Shooter.STATE == Shooter.States.SHOOTING && pressed){
+    } else if(Shooter.STATE == Shooter.States.SHOOTING && (pressed || Shooter.AUTO)){
 
       lastPressed = true;
 
@@ -111,6 +118,8 @@ public class SetShooter extends CommandBase {
       shooter.setSpeed(shooterPower);
 
       shooter.setKicker(1.0);
+
+      kickerTimer.reset();
 
     //---------------------------------------------------------------------------
     } else if(Shooter.STATE == Shooter.States.STOPPED){

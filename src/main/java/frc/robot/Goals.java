@@ -2,16 +2,14 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.geometry.Translation2d;
 
-public final class States {
+public final class Goals {
 
     enum StartingPosition {LEFT, CENTER, RIGHT}
 
 
-
     // CHANGE ONLY THIS
 
-    public static StartingPosition startingPos = StartingPosition.CENTER;
-
+    public static StartingPosition startingPos = StartingPosition.LEFT;
 
     
     public static Translation2d getGoalPosition(){
@@ -20,11 +18,11 @@ public final class States {
 
         if(startingPos == StartingPosition.LEFT){
 
-            goalPos = new Translation2d(0.0, 0.0);
+            goalPos = new Translation2d(-3.175, 0.0);
 
         } else if(startingPos == StartingPosition.CENTER){
 
-            goalPos = new Translation2d(-48.0, -24.0);
+            goalPos = new Translation2d(-5.0, -5.0);
 
         } else {
 

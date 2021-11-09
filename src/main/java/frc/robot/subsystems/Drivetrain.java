@@ -1,144 +1,100 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj.Compressor;
-import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj.geometry.Pose2d;
-import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.geometry.Translation2d;
-import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
-import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.kauailabs.navx.frc.AHRS;
 
+import edu.wpi.first.wpilibj.SpeedControllerGroup;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.geometry.Pose2d;
+import edu.wpi.first.wpilibj.geometry.Translation2d;
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Shuphlebord;
+import frc.robot.TabData;
 import frc.robot.Constants.DTProperties;
 import frc.robot.Constants.DrivetrainConstants;
-import frc.robot.Constants;
-import frc.robot.States;
+import frc.robot.wrappers.TalonFXEncoder;
+import frc.robot.Goals;
 
 public class Drivetrain extends SubsystemBase {
-  /** Creates a new Drivetrain. */
+  // The motors on the left side of the drive.
 
-  WPI_TalonFX topLeftMotor;
-  WPI_TalonFX topRightMotor;
-  WPI_TalonFX bottomLeftMotor;
-  WPI_TalonFX bottomRightMotor;
+  WPI_TalonFX topLeft = new WPI_TalonFX(DrivetrainConstants.topLeftMotor);
+  WPI_TalonFX bottomLeft = new WPI_TalonFX(DrivetrainConstants.bottomLeftMotor);
 
-  DifferentialDrive drivetrain;
+  private final SpeedControllerGroup m_leftMotors = new SpeedControllerGroup(topLeft, bottomLeft);
 
-  AHRS navX;
-  public double gyroOffset = 0.0;
+  // The motors on the right side of the drive.
+
+  WPI_TalonFX topRight = new WPI_TalonFX(DrivetrainConstants.topRightMotor);
+  WPI_TalonFX bottomRight = new WPI_TalonFX(DrivetrainConstants.bottomRightMotor);
+
+  private final SpeedControllerGroup m_rightMotors = new SpeedControllerGroup(topRight, bottomRight);
+
+  // The robot's drive
+  private final DifferentialDrive m_drive = new DifferentialDrive(m_leftMotors, m_rightMotors);
+
+  // The encoders
+  public TalonFXEncoder m_leftEncoder = new TalonFXEncoder(topLeft, bottomLeft);
+  public TalonFXEncoder m_rightEncoder = new TalonFXEncoder(topRight, bottomRight);
+
+  // The gyro sensor
+  public final AHRS m_gyro = new AHRS();
+
+  // Odometry class for tracking robot pose
+  public final DifferentialDriveOdometry m_odometry;
+
+  // Boolean used to set initial error offset.
   public boolean firstRead = true;
 
-  DifferentialDriveOdometry odometry;
 
-  public static Pose2d pose;
-
-  public Compressor compressor;
-
+  /**
+   * Creates a new DriveSubsystem.
+   */
   public Drivetrain() {
+    // Sets the distance per pulse for the encoders
+    m_leftEncoder.setDistancePerPulse(DTProperties.kEncoderDistancePerPulse);
+    m_rightEncoder.setDistancePerPulse(DTProperties.kEncoderDistancePerPulse);
 
-    topLeftMotor = new WPI_TalonFX(DrivetrainConstants.topLeftMotor);
-    topRightMotor = new WPI_TalonFX(DrivetrainConstants.topRightMotor);
-    bottomLeftMotor = new WPI_TalonFX(DrivetrainConstants.bottomLeftMotor);
-    bottomRightMotor = new WPI_TalonFX(DrivetrainConstants.bottomRightMotor);
-
-    bottomLeftMotor.follow(topLeftMotor);
-    bottomRightMotor.follow(topRightMotor);
-
-    topLeftMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor);
-    topRightMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor);
-    bottomLeftMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor);
-    bottomRightMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor);
-
-    drivetrain = new DifferentialDrive(topLeftMotor, topRightMotor);
-
-    navX = new AHRS();
-
-    pose = new Pose2d();
-
-    resetSensors();
-
-    odometry = new DifferentialDriveOdometry(navX.getRotation2d());
-
-    compressor = new Compressor();
-  }
-
-
-
-  public void arcadeDrive(double throttle, double turn){
-
-    /*
-    double throttleDirection = 1.0;
-    double turnDirection = 1.0;
-
-    if(throttle != 0.0){
-      throttleDirection = throttle / Math.abs(throttle);
-
-    } else{
-      throttleDirection = 0.0;
-    }
-
-    if(turn != 0.0){
-      turnDirection = turn / Math.abs(turn);
-
-    } else{
-      turnDirection = 0.0;
-    }
-
-    double intercept = 0.2;
-
-    double slope = 0.5;
-
-    throttle = slope * throttle + throttleDirection * intercept;
-    turn = slope * turn + turnDirection * intercept;
-    */
+    resetEncoders();
     
-    drivetrain.arcadeDrive(throttle, turn);
+    m_odometry = new DifferentialDriveOdometry(m_gyro.getRotation2d());
   }
 
-
-
-  public void curvatureDrive(double throttle, double turn){
-
-    drivetrain.curvatureDrive(throttle, turn, Math.abs(throttle) < 0.1);
-  }
-
-
-  
-  public void stop(){
-    arcadeDrive(0.0, 0.0);
-  }
-
-
-
-  public double getTicks(String side){
-    double averageTicks = 0.0;
-    if(side.toLowerCase() == "left"){
-      averageTicks = -topLeftMotor.getSelectedSensorPosition() - bottomLeftMotor.getSelectedSensorPosition();
-      averageTicks /= 2;
-    } else if(side.toLowerCase() == "right"){
-      averageTicks = topRightMotor.getSelectedSensorPosition() + bottomRightMotor.getSelectedSensorPosition();
-      averageTicks /= 2;
+  @Override
+  public void periodic() {
+    // Update the odometry in the periodic block
+    if(firstRead){
+      m_gyro.reset();
+      firstRead = false;
     }
-    return averageTicks;
+
+    m_odometry.update(m_gyro.getRotation2d(), -m_leftEncoder.getDistance(), m_rightEncoder.getDistance());
+    Shuphlebord.drivetrainData.updateEntry("Pose X", getPose().getX());
+    Shuphlebord.drivetrainData.updateEntry("Pose Y", getPose().getY());
+    Shuphlebord.drivetrainData.updateEntry("Pose A", getPose().getRotation().getDegrees());
+    Shuphlebord.drivetrainData.updateEntry("LEnc", m_leftEncoder.getDistance());
+    Shuphlebord.drivetrainData.updateEntry("REnc", m_rightEncoder.getDistance());
   }
 
-
-
-  public static Pose2d getPose(){
-    return pose;
+  /**
+   * Returns the currently-estimated pose of the robot.
+   *
+   * @return The pose.
+   */
+  public Pose2d getPose() {
+    return m_odometry.getPoseMeters();
   }
 
-  
-
+  /**
+   * 
+   * @return The distance between the goal and the robot.
+   */
   public double getDistance(){
-    Translation2d goalPos = States.getGoalPosition();
+    Translation2d goalPos = Goals.getGoalPosition();
+
+    Pose2d pose = getPose();
 
     double deltaX = Math.abs(pose.getX() - goalPos.getX());
     double deltaY = Math.abs(pose.getY() - goalPos.getY());
@@ -148,87 +104,148 @@ public class Drivetrain extends SubsystemBase {
     return distance;
   }
 
-
-
-  public static double getAngleToGoal(){
-
-    Translation2d goalPos = States.getGoalPosition();
-
-    double deltaX = Math.abs(pose.getX() - goalPos.getX());
-    double deltaY = Math.abs(pose.getY() - goalPos.getY());
-
-    double phi = Math.atan(deltaX / deltaY);
-
-    double drivetrainToTarget;
-
-    if(pose.getX() >= goalPos.getX()){
-
-      drivetrainToTarget = 180 - phi + pose.getRotation().getDegrees();
-
-    } else{
-
-      drivetrainToTarget = 180 + phi + pose.getRotation().getDegrees();
-
-    }
-
-    return drivetrainToTarget;
+  /**
+   * Returns the current wheel speeds of the robot.
+   *
+   * @return The current wheel speeds.
+   */
+  public DifferentialDriveWheelSpeeds getWheelSpeeds() {
+    return new DifferentialDriveWheelSpeeds(-m_leftEncoder.getVelocity(), m_rightEncoder.getVelocity());
   }
 
-
-
-  public void resetPose(){
-    odometry.resetPosition(new Pose2d(), new Rotation2d());
-    resetSensors();
+  /**
+   * Resets the odometry to the specified pose.
+   *
+   * @param pose The pose to which to set the odometry.
+   */
+  public void resetOdometry(Pose2d pose) {
+    resetEncoders();
+    m_odometry.resetPosition(pose, m_gyro.getRotation2d());
   }
 
-
-
-  public void resetSensors(){
-    topLeftMotor.setSelectedSensorPosition(0.0);
-    topRightMotor.setSelectedSensorPosition(0.0);
-    bottomLeftMotor.setSelectedSensorPosition(0.0);
-    bottomRightMotor.setSelectedSensorPosition(0.0);
-    navX.calibrate();
-    navX.reset();
+  /**
+   * Drives the robot using arcade controls.
+   *
+   * @param fwd the commanded forward movement
+   * @param rot the commanded rotation
+   */
+  public void arcadeDrive(double fwd, double rot) {
+    m_drive.arcadeDrive(fwd, rot);
   }
 
-
-
-  public double readEncoders() {
-    return topLeftMotor.getSelectedSensorPosition();
-    //return topRightMotor.getSelectedSensorPosition();
-    //return bottomLeftMotor.getSelectedSensorPosition();
-    //return bottomRightMotor.getSelectedSensorPosition();
-    //return navX.getRotation2d().getDegrees();
+  /**
+   * Drives the robot using curvature drive
+   * 
+   * @param throttle
+   * @param turn
+   */
+  public void curvatureDrive(double throttle, double turn){
+    m_drive.curvatureDrive(throttle, turn, Math.abs(throttle) < 0.1);
   }
 
+  /**
+   * Controls the left and right sides of the drive directly with voltages.
+   *
+   * @param leftVolts  the commanded left output
+   * @param rightVolts the commanded right output
+   */
+  public void tankDriveVolts(double leftVolts, double rightVolts) {
+    m_leftMotors.setVoltage(-leftVolts);
+    m_rightMotors.setVoltage(rightVolts);
+    m_drive.feed();
+  }
 
+  /**
+   * Resets the drive encoders to currently read a position of 0.
+   */
+  public void resetEncoders() {
+    m_leftEncoder.reset();
+    m_rightEncoder.reset();
+  }
 
-  @Override
-  public void periodic() {
-    // This method will be called once per scheduler run
+  /**
+   * Gets the average distance of the two encoders.
+   *
+   * @return the average of the two encoder readings
+   */
+  public double getAverageEncoderDistance() {
+    return (-m_leftEncoder.getDistance() + m_rightEncoder.getDistance()) / 2.0;
+  }
 
-    // Get my gyro angle. We are negating the value because gyros return positive
-    // values as the robot turns clockwise. This is not standard convention that is
-    // used by the WPILib classes.
+  /**
+   * Gets the left drive encoder.
+   *
+   * @return the left drive encoder
+   */
+  public TalonFXEncoder getLeftEncoder() {
+    return m_leftEncoder;
+  }
 
-    double leftTicks = getTicks("left");
-    double rightTicks = getTicks("right");
+  /**
+   * Gets the right drive encoder.
+   *
+   * @return the right drive encoder
+   */
+  public TalonFXEncoder getRightEncoder() {
+    return m_rightEncoder;
+  }
 
-    // Measurements taken by going forward 5 feet
-    // double motorRotations = 59653.66 / ticksPerRotation;
-    // double wheelRotations = 60.0 / wheelCircumference;
-    
-    // How much the motor rotated vs how much the wheel rotated
+  /**
+   * Sets the max output of the drive.  Useful for scaling the drive to drive more slowly.
+   *
+   * @param maxOutput the maximum output to which the drive will be constrained
+   */
+  public void setMaxOutput(double maxOutput) {
+    m_drive.setMaxOutput(maxOutput);
+  }
 
-    // Rotations * wheel circumference = distance (in.) traveled. (dividing by gearRatio converts motor rotations to wheel rotations)
-    double leftMeters = leftTicks * DTProperties.kEncoderDistancePerPulse;
-    double rightMeters = rightTicks * DTProperties.kEncoderDistancePerPulse;
+  /**
+   * Zeroes the heading of the robot.
+   */
+  public void zeroHeading() {
+    m_gyro.reset();
+  }
 
-    // Update the pose
-    var gyroAngle = Rotation2d.fromDegrees(-navX.getAngle() - gyroOffset);
+  /**
+   * Returns the heading of the robot.
+   *
+   * @return the robot's heading in degrees, from -180 to 180
+   */
+  public double getHeading() {
+    return m_gyro.getRotation2d().getDegrees();
+  }
 
-    pose = odometry.update(gyroAngle, leftMeters, rightMeters);
+  /**
+   * Returns the turn rate of the robot.
+   *
+   * @return The turn rate of the robot, in degrees per second
+   */
+  public double getTurnRate() {
+    return m_gyro.getRate();
+  }
+
+  /**
+   * Returns the current draws of each drivetrain motor
+   * 
+   * @return An double array containing the supply amperage for each motor
+   */
+  public double[] getCurrentDraw(){
+
+    TabData data = Shuphlebord.powerData;
+
+    double tl = topLeft.getSupplyCurrent();
+    double tr = topRight.getSupplyCurrent();
+    double bl = bottomLeft.getSupplyCurrent();
+    double br = bottomRight.getSupplyCurrent();
+
+    data.updateEntry("Drivetrain TL", tl);
+    data.updateEntry("Drivetrian TR", tr);
+    data.updateEntry("Drivetrain BL", bl);
+    data.updateEntry("Drivetrian BR", br);
+
+    double[] powers = {tl, tr, bl, br};
+
+    return powers;
 
   }
 }

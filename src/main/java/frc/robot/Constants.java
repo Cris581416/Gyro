@@ -63,6 +63,8 @@ public final class Constants {
 
         public static final int intake = 8;
 
+        public static final int cylinder = 0;
+
     }
     
 
@@ -98,8 +100,8 @@ public final class Constants {
 
     public final class AutoConstants{
 
-        public static final double kMaxSpeedMetersPerSecond = 3.048;
-        public static final double kMaxAccelerationMetersPerSecondSquared = 3.0;
+        public static final double kMaxSpeedMetersPerSecond = 0.5;//3.048;
+        public static final double kMaxAccelerationMetersPerSecondSquared = 0.5;//3.0;
 
         // Reasonable baseline values for a RAMSETE follower in units of meters and seconds
         public static final double kRamseteB = 2.0;
@@ -125,7 +127,10 @@ public final class Constants {
     | Turret | Left: -    | Right: +  |
     |        |            |           |
     -----------------------------------
-    | LL     | LOC:  -    | ROC:  +   |
+    | LL     | LOC:  -    | ROC:   +  |
+    |        |            |           |
+    -----------------------------------
+    | DT     | Left: +    | Right: -  |
     |        |            |           |
     -----------------------------------
     */

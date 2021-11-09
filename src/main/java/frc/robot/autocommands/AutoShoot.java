@@ -2,52 +2,66 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.commands;
+package frc.robot.autocommands;
 
-import edu.wpi.first.wpilibj.GenericHID.Hand;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.RobotContainer;
-import frc.robot.subsystems.Turret;
+import frc.robot.subsystems.Shooter;
 
-public class ManualTurretTurn extends CommandBase {
-  /** Creates a new ManualTurretTurn. */
-
+public class AutoShoot extends CommandBase {
+  /** Creates a new AutoShoot. */
   @SuppressWarnings({ "PMD.UnusedPrivateField", "PMD.SingularField" })
 
-  Turret turret;
+  Timer timer = new Timer();
 
-  public ManualTurretTurn(Turret m_turret) {
+  boolean finished = false;
+  Shooter.States LAST_STATE;
+
+  public AutoShoot() {
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(m_turret);
-    turret = m_turret;
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+
+    timer.reset();
+    timer.stop();
+    Shooter.STATE = Shooter.States.REVVING;
+    LAST_STATE = Shooter.States.REVVING;
+    Shooter.AUTO = true;
+
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
 
-    double turnSpeed = RobotContainer.mechController.getX(Hand.kRight);
 
-    turret.set(turnSpeed);
+    if(LAST_STATE != Shooter.STATE){
+      timer.reset();
+      timer.start();
+    }
 
-    RobotContainer.telemetry.turret.updateEntry("Position", turret.getPosition());
+    if(timer.get() > 2.0){
+      finished = true;
+    }
 
-    System.out.println("Turret Position: " + turret.getPosition());
-
+    LAST_STATE = Shooter.STATE;
   }
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+
+    Shooter.STATE = Shooter.States.STOPPED;
+    Shooter.AUTO = false;
+
+  }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false;
+    return finished;
   }
 }

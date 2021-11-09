@@ -5,10 +5,15 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.geometry.Translation2d;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.Constants;
+import frc.robot.Goals;
+import frc.robot.Shuphlebord;
+import frc.robot.TabData;
 
 public class Turret extends SubsystemBase {
   /** Creates a new Turret. */
@@ -40,7 +45,7 @@ public class Turret extends SubsystemBase {
   public void set(double speed) {
     double limit = 1.0;
 
-    if(Math.abs(speed) > limit){speed = limit * speed / Math.abs(speed);}
+    if(Math.abs(speed) > limit){speed = limit * Math.signum(speed);}
 
     turret.set(speed);
   }
@@ -84,6 +89,43 @@ public class Turret extends SubsystemBase {
   }
   
 
+  public double getAngleToGoal(Pose2d robotPose){
+
+    Translation2d goalPos = Goals.getGoalPosition();
+
+    double deltaX = Math.abs(robotPose.getX() - goalPos.getX());
+    double deltaY = Math.abs(robotPose.getY() - goalPos.getY());
+
+    double goalError;
+
+    if(deltaX == 0.0 && deltaY == 0.0){
+
+      goalError = 0.0;
+
+    } else{
+
+      goalError = Math.atan(deltaY / deltaX);
+    
+    }
+
+    double setpoint;
+
+    if(robotPose.getY() >= goalPos.getY()){
+
+      setpoint = Math.toRadians(robotPose.getRotation().getDegrees()) - goalError;
+
+    } else{
+
+      setpoint = Math.toRadians(robotPose.getRotation().getDegrees()) + goalError;
+
+    }
+
+    setpoint = Math.toDegrees(setpoint) % 360.0;
+
+    return setpoint;
+  }
+
+
 
   // Utility Methods
 
@@ -101,9 +143,9 @@ public class Turret extends SubsystemBase {
 
 
 
-
   public boolean isValidPosition(double degrees){
-    double alternate = 360.0 - degrees;
+
+    double alternate = -Math.signum(degrees) * (360.0 - Math.abs(degrees));
 
     if(degrees > maxDegrees && alternate < minDegrees){
       return false;
@@ -112,10 +154,12 @@ public class Turret extends SubsystemBase {
     }
     return true;
   }
+
+
   
   public double getValidPosition(double degrees){
 
-    double alternate = 360.0 - degrees;
+    double alternate = -Math.signum(degrees) * (360.0 - Math.abs(degrees));
 
     if(degrees > maxDegrees || degrees < minDegrees){
       return alternate;
@@ -123,6 +167,20 @@ public class Turret extends SubsystemBase {
 
     return degrees;
   }
+
+
+
+  public double getCurrentDraw(){
+
+    TabData data = Shuphlebord.powerData;
+
+    data.updateEntry("Turret", turret.getSupplyCurrent()); 
+
+    return turret.getSupplyCurrent();
+
+  }
+
+
 
   @Override
   public void periodic() {

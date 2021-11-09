@@ -4,8 +4,15 @@
 
 package frc.robot;
 
+import java.io.IOException;
+import java.nio.file.Path;
+
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
+import edu.wpi.first.wpilibj.trajectory.Trajectory;
+import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
@@ -19,6 +26,19 @@ public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
   private RobotContainer m_robotContainer;
+  
+  // PATHS FOR AUTO
+  static String dOLDir = "paths/driveoffline.wpilib.json";
+  static String sPTBDir = "paths/spathtoballs.wpilib.json";
+  static String iBDir = "paths/intakeballs.wpilib.json";
+  static String bTLDir = "paths/backtoline.wpilib.json";
+  static String dAIDir = "paths/driveandintake.wpilib.json";
+
+  public static Trajectory dOLDTrajectory = new Trajectory();
+  public static Trajectory sPTBTrajectory = new Trajectory();
+  public static Trajectory iBTrajectory = new Trajectory();
+  public static Trajectory bTLTrajectory = new Trajectory();
+  public static Trajectory dAITrajectory = new Trajectory();
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -28,6 +48,42 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
+
+    try {
+      Path dOLPath = Filesystem.getDeployDirectory().toPath().resolve(dOLDir);
+      dOLDTrajectory = TrajectoryUtil.fromPathweaverJson(dOLPath);
+    } catch (IOException ex) {
+      DriverStation.reportError("Unable to open trajectory: " + dOLDir, ex.getStackTrace());
+    }
+
+    try {
+      Path sPTBPath = Filesystem.getDeployDirectory().toPath().resolve(sPTBDir);
+      sPTBTrajectory = TrajectoryUtil.fromPathweaverJson(sPTBPath);
+    } catch (IOException ex) {
+      DriverStation.reportError("Unable to open trajectory: " + sPTBDir, ex.getStackTrace());
+    }
+
+    try {
+      Path iBPath = Filesystem.getDeployDirectory().toPath().resolve(iBDir);
+      iBTrajectory = TrajectoryUtil.fromPathweaverJson(iBPath);
+    } catch (IOException ex) {
+      DriverStation.reportError("Unable to open trajectory: " + iBDir, ex.getStackTrace());
+    }
+
+    try {
+      Path bTLPath = Filesystem.getDeployDirectory().toPath().resolve(bTLDir);
+      bTLTrajectory = TrajectoryUtil.fromPathweaverJson(bTLPath);
+    } catch (IOException ex) {
+      DriverStation.reportError("Unable to open trajectory: " + bTLDir, ex.getStackTrace());
+    }
+
+    try {
+      Path dAIPath = Filesystem.getDeployDirectory().toPath().resolve(dAIDir);
+      dAITrajectory = TrajectoryUtil.fromPathweaverJson(dAIPath);
+    } catch (IOException ex) {
+      DriverStation.reportError("Unable to open trajectory: " + dAIDir, ex.getStackTrace());
+    }
+
     m_robotContainer = new RobotContainer();
     LiveWindow.disableAllTelemetry();
   }
