@@ -44,8 +44,8 @@ public final class Constants {
     public final class HoodConstants{
 
         public static final int hood = 5;
-        public static final int hoodEncoderA = 2;
-        public static final int hoodEncoderB = 3;
+        public static final int hoodEncoderA = 3;
+        public static final int hoodEncoderB = 2;
 
     }
 
@@ -106,6 +106,12 @@ public final class Constants {
         // Reasonable baseline values for a RAMSETE follower in units of meters and seconds
         public static final double kRamseteB = 2.0;
         public static final double kRamseteZeta = 0.7;
+
+    }
+
+    public final class LEDConstants{
+
+        public static final int blinkinPort = 0;
 
     }
     

@@ -25,10 +25,7 @@ public class Shooter extends SubsystemBase {
   WPI_TalonFX shooterMotor1;
   WPI_TalonFX shooterMotor2;
 
-
   WPI_TalonFX kicker;
-
-
 
   public Shooter() {
 

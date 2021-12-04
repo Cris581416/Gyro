@@ -7,7 +7,11 @@ package frc.robot.wrappers;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
-/** Add your docs here. */
+/**
+ * 
+ * A wrapper class used to access the TalonFX built in encoders in the same way as the Encoder class.
+ * 
+*/
 public class TalonFXEncoder {
 
     WPI_TalonFX motor;
@@ -53,7 +57,7 @@ public class TalonFXEncoder {
             rawVel /= 2.0;
         }
 
-        return rawVel * 10;
+        return rawVel * 10.0;
     }
 
 

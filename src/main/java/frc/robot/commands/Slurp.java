@@ -29,10 +29,7 @@ public class Slurp extends CommandBase {
 
     Hopper.STATE = Hopper.States.INDEXING;
 
-    intake.getCurrentDraw();
-
-    //intake.setCylinder(true);
-
+    intake.extend();
     intake.set(0.5);
 
   }
@@ -41,7 +38,7 @@ public class Slurp extends CommandBase {
   @Override
   public void end(boolean interrupted) {
     intake.stop();
-    intake.setCylinder(false);
+    intake.retract();
   }
 
   // Returns true when the command should end.

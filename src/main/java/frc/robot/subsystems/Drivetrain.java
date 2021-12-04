@@ -74,8 +74,6 @@ public class Drivetrain extends SubsystemBase {
     Shuphlebord.drivetrainData.updateEntry("Pose X", getPose().getX());
     Shuphlebord.drivetrainData.updateEntry("Pose Y", getPose().getY());
     Shuphlebord.drivetrainData.updateEntry("Pose A", getPose().getRotation().getDegrees());
-    Shuphlebord.drivetrainData.updateEntry("LEnc", m_leftEncoder.getDistance());
-    Shuphlebord.drivetrainData.updateEntry("REnc", m_rightEncoder.getDistance());
   }
 
   /**
@@ -140,7 +138,12 @@ public class Drivetrain extends SubsystemBase {
    * @param turn
    */
   public void curvatureDrive(double throttle, double turn){
-    m_drive.curvatureDrive(throttle, turn, Math.abs(throttle) < 0.1);
+
+    if(Math.abs(throttle) <= 0.1){
+      m_drive.curvatureDrive(throttle, turn , true);
+    } else{
+      m_drive.curvatureDrive(throttle, turn, false);
+    }
   }
 
   /**

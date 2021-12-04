@@ -10,9 +10,7 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.RobotContainer;
 import frc.robot.Shuphlebord;
 import frc.robot.TabData;
-import frc.robot.Constants.HoodConstants;
 import frc.robot.subsystems.Hood;
-import frc.robot.subsystems.Limelight;
 
 public class AlignHood extends CommandBase {
   /** Creates a new AlignHood. */
@@ -38,33 +36,25 @@ public class AlignHood extends CommandBase {
   @Override
   public void initialize() {
 
-    // If this doesn't work, just do "change all occurrences" of hoodData back to RobotContainer.telemetry.hood and delete line 26
-
     hoodData.updateEntry("kP", kP);
     hoodData.updateEntry("kI", kI);
     hoodData.updateEntry("kD", kD);
     hoodData.updateEntry("Position", hood.getPosition());
     hoodData.updateEntry("Power", hoodPower);
     hoodData.updateEntry("State", Hood.STATE.name());
-    hoodData.updateEntry("AdjAngle", 30.0);
+
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
 
-    hood.getCurrentDraw();
-
     double adjustedkP = hoodData.getEntryData("kP").getDouble();
     double adjustedkI = hoodData.getEntryData("kI").getDouble();
-    double adjustedkD = hoodData.getEntryData("kD").getDouble();
+    double adjustedkD = hoodData.getEntryData("kD").getDouble();    
 
-    double adjustedAngle = hoodData.getEntryData("AdjAngle").getDouble();
-    
-    
     //---------------------------------------------------------------------------
     if(Hood.STATE == Hood.States.ALIGNING) {
-
       
       if(kP != adjustedkP || kI != adjustedkI || kD != adjustedkD){
         kP = adjustedkP;
@@ -74,7 +64,9 @@ public class AlignHood extends CommandBase {
         controller.setPID(kP, kI, kD);
       }
 
-      setpoint = adjustedAngle;//hood.calculateAngle();
+      setpoint = hood.calculateAngle() - Hood.OFFSET;
+
+      hoodData.updateEntry("Setpoint", setpoint);
 
       if(setpoint > hood.maxDegrees){
         setpoint = hood.maxDegrees;
@@ -90,7 +82,6 @@ public class AlignHood extends CommandBase {
     //---------------------------------------------------------------------------
     } else if(Hood.STATE == Hood.States.MANUAL) {
 
-
       double hoodSpeed = RobotContainer.mechController.getY(Hand.kLeft);
 
       hood.set(hoodSpeed);
@@ -98,15 +89,14 @@ public class AlignHood extends CommandBase {
     //---------------------------------------------------------------------------
     } else if(Hood.STATE == Hood.States.RETRACTED) {
 
-
       hood.set(0.0);
-
 
     }
 
     hoodData.updateEntry("Position", hood.getPosition());
     hoodData.updateEntry("Power", hoodPower);
     hoodData.updateEntry("State", Hood.STATE.toString());
+    hoodData.updateEntry("OFFSET", Hood.OFFSET);
   }
 
   // Called once the command ends or is interrupted.

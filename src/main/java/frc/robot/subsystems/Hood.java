@@ -23,7 +23,14 @@ public class Hood extends SubsystemBase {
   // Hood States
   public static enum States {ALIGNING, MANUAL, RETRACTED}
 
-  public static States STATE = States.MANUAL;
+  public static States STATE = States.RETRACTED;
+
+  public static enum Targets {CLOSE, LINE, TRENCH}
+
+  public static Targets TARGET = Targets.LINE;
+
+  public static double OFFSET = 0.0;
+  public static final double INCREMENT = 1.0;
 
   WPI_TalonSRX hood;
 
@@ -92,7 +99,24 @@ public class Hood extends SubsystemBase {
 
 
   public double calculateAngle(){
-    return 0.0;
+
+    double angle = 0.0;
+
+    if(TARGET == Targets.CLOSE){
+
+      angle = 0.0;
+      
+    } else if(TARGET == Targets.LINE){
+
+      angle = 35.0;
+
+    } else if(TARGET == Targets.TRENCH){
+
+      angle = 39.0;
+
+    }
+
+    return angle;
   }
 
 

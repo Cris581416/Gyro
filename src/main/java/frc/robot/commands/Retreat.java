@@ -2,34 +2,32 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.autocommands;
+package frc.robot.commands;
 
-import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.subsystems.Shooter;
+import frc.robot.RobotContainer;
+import frc.robot.subsystems.Drivetrain;
 
-public class AutoShoot extends CommandBase {
-  /** Creates a new AutoShoot. */
-  @SuppressWarnings({ "PMD.UnusedPrivateField", "PMD.SingularField" })
+public class Retreat extends CommandBase {
+  /** Creates a new Retreat. */
+  Drivetrain drivetrain;
 
-  Timer timer = new Timer();
-
+  Pose2d lastPose;
+  double distance = 1.0;
   boolean finished = false;
-  Shooter.States LAST_STATE;
 
-  public AutoShoot() {
+  public Retreat(Drivetrain m_drivetrain) {
     // Use addRequirements() here to declare subsystem dependencies.
+    addRequirements(m_drivetrain);
+    drivetrain = m_drivetrain;
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
 
-    timer.reset();
-    timer.stop();
-    Shooter.STATE = Shooter.States.REVVING;
-    LAST_STATE = Shooter.States.REVVING;
-    Shooter.AUTO = true;
+    lastPose = RobotContainer.robotPose;
 
   }
 
@@ -37,25 +35,23 @@ public class AutoShoot extends CommandBase {
   @Override
   public void execute() {
 
+    if(Math.abs(RobotContainer.robotPose.getX()) < Math.abs(lastPose.getX()) + distance){
 
-    if(LAST_STATE != Shooter.STATE){
-      timer.reset();
-      timer.start();
-    }
+      drivetrain.curvatureDrive(-0.2, 0.0);
 
-    if(timer.get() > 3.5){
+    } else{
+
       finished = true;
+
     }
 
-    LAST_STATE = Shooter.STATE;
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
 
-    Shooter.STATE = Shooter.States.STOPPED;
-    Shooter.AUTO = false;
+    drivetrain.curvatureDrive(0.0, 0.0);
 
   }
 

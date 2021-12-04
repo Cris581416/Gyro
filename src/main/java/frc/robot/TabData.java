@@ -61,6 +61,10 @@ public class TabData {
 
         NetworkTableEntry entry = getEntry(entryName);
 
-        entry.setValue(value);
+        if(String.class.equals(value.getClass())){
+            entry.setString((String) value);
+        } else{
+            entry.setValue(value);
+        }
     }
 }

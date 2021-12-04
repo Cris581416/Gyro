@@ -49,40 +49,11 @@ public class Robot extends TimedRobot {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
 
-    try {
-      Path dOLPath = Filesystem.getDeployDirectory().toPath().resolve(dOLDir);
-      dOLDTrajectory = TrajectoryUtil.fromPathweaverJson(dOLPath);
-    } catch (IOException ex) {
-      DriverStation.reportError("Unable to open trajectory: " + dOLDir, ex.getStackTrace());
-    }
-
-    try {
-      Path sPTBPath = Filesystem.getDeployDirectory().toPath().resolve(sPTBDir);
-      sPTBTrajectory = TrajectoryUtil.fromPathweaverJson(sPTBPath);
-    } catch (IOException ex) {
-      DriverStation.reportError("Unable to open trajectory: " + sPTBDir, ex.getStackTrace());
-    }
-
-    try {
-      Path iBPath = Filesystem.getDeployDirectory().toPath().resolve(iBDir);
-      iBTrajectory = TrajectoryUtil.fromPathweaverJson(iBPath);
-    } catch (IOException ex) {
-      DriverStation.reportError("Unable to open trajectory: " + iBDir, ex.getStackTrace());
-    }
-
-    try {
-      Path bTLPath = Filesystem.getDeployDirectory().toPath().resolve(bTLDir);
-      bTLTrajectory = TrajectoryUtil.fromPathweaverJson(bTLPath);
-    } catch (IOException ex) {
-      DriverStation.reportError("Unable to open trajectory: " + bTLDir, ex.getStackTrace());
-    }
-
-    try {
-      Path dAIPath = Filesystem.getDeployDirectory().toPath().resolve(dAIDir);
-      dAITrajectory = TrajectoryUtil.fromPathweaverJson(dAIPath);
-    } catch (IOException ex) {
-      DriverStation.reportError("Unable to open trajectory: " + dAIDir, ex.getStackTrace());
-    }
+    dOLDTrajectory = loadTrajectories(dOLDir);
+    sPTBTrajectory = loadTrajectories(sPTBDir);
+    iBTrajectory = loadTrajectories(iBDir);
+    bTLTrajectory = loadTrajectories(bTLDir);
+    dAITrajectory = loadTrajectories(dAIDir);
 
     m_robotContainer = new RobotContainer();
     LiveWindow.disableAllTelemetry();
@@ -106,7 +77,8 @@ public class Robot extends TimedRobot {
 
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+  }
 
   @Override
   public void disabledPeriodic() {}
@@ -144,10 +116,27 @@ public class Robot extends TimedRobot {
   @Override
   public void testInit() {
     // Cancels all running commands at the start of test mode.
-    CommandScheduler.getInstance().cancelAll();
   }
 
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {}
+
+  /**
+   * Method attempts to load a Trajectory from a path, will print the stack trace if failed.
+   * @param path A string containing the path to the trajectory
+   * @return A Trajectory
+   */
+  private Trajectory loadTrajectories(String path){
+    Trajectory trajectory = new Trajectory();
+
+    try {
+      Path pathObj = Filesystem.getDeployDirectory().toPath().resolve(path);
+      trajectory = TrajectoryUtil.fromPathweaverJson(pathObj);
+    } catch (IOException ex) {
+      DriverStation.reportError("Unable to open trajectory: " + path, ex.getStackTrace());
+    }
+
+    return trajectory;
+  }
 }

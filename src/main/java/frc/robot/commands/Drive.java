@@ -5,13 +5,11 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.GenericHID.Hand;
-import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.RobotContainer;
 import frc.robot.Shuphlebord;
 import frc.robot.TabData;
 import frc.robot.subsystems.Drivetrain;
-import frc.robot.subsystems.Limelight;
 
 public class Drive extends CommandBase {
   /** Creates a new Drive. */
@@ -36,8 +34,6 @@ public class Drive extends CommandBase {
   @Override
   public void execute() {
 
-    drivetrain.getCurrentDraw();
-
     if(drivetrain.firstRead){
       drivetrain.m_gyro.reset();
       drivetrain.firstRead = false;
@@ -47,8 +43,6 @@ public class Drive extends CommandBase {
     drivetrainData.updateEntry("Pose X", drivetrain.getPose().getX());
     drivetrainData.updateEntry("Pose Y", drivetrain.getPose().getY());
     drivetrainData.updateEntry("Pose A", drivetrain.getPose().getRotation().getDegrees());
-    drivetrainData.updateEntry("LEnc", drivetrain.m_leftEncoder.getDistance());
-    drivetrainData.updateEntry("REnc", drivetrain.m_rightEncoder.getDistance());
 
 
     double throttle = 0.55 * RobotContainer.driveController.getY(Hand.kLeft);

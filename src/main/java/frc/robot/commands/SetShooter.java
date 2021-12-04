@@ -6,11 +6,11 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
-import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.RobotContainer;
 import frc.robot.Shuphlebord;
 import frc.robot.TabData;
+import frc.robot.subsystems.Hood;
 import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Shooter;
 
@@ -21,14 +21,7 @@ public class SetShooter extends CommandBase {
 
   Shooter shooter;
 
-  Timer kickerTimer = new Timer();
-
-  private double kP = 0.08;
-  private double kI = 0.0045;
-  private double kD = 0.0065;
-  private double shooterPower = 0.0;
-  private double setpoint = 0;
-  private PIDController controller = new PIDController(kP, kI, kD);
+  Timer shootTimer = new Timer();
 
   TabData shooterData = Shuphlebord.shooterData;
 
@@ -43,61 +36,31 @@ public class SetShooter extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    kickerTimer.reset();
-
-    shooterData.updateEntry("kP", kP);
-    shooterData.updateEntry("kI", kI);
-    shooterData.updateEntry("kD", kD);
+    shootTimer.reset();
     shooterData.updateEntry("Velocity", shooter.getVelocity());
-    shooterData.updateEntry("Power", shooterPower);
     shooterData.updateEntry("State", Shooter.STATE.name());
-    shooterData.updateEntry("Setpoint", -4400.0);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
 
-    shooter.getCurrentDraw();
-
-    double adjustedkP = (double) shooterData.getEntryData("kP").getDouble();
-    double adjustedkI = (double) shooterData.getEntryData("kI").getDouble();
-    double adjustedkD = (double) shooterData.getEntryData("kD").getDouble();
-
-    double adjustedSetpoint = (double) shooterData.getEntryData("AdjSetpoint").getDouble();
-
     boolean pressed = RobotContainer.driveController.getTriggerAxis(Hand.kRight) != 0.0;
 
     if(Shooter.STATE == Shooter.States.REVVING && (pressed || Shooter.AUTO)){
 
-      kickerTimer.start();
+      shootTimer.start();
 
       lastPressed = true;
 
       Hopper.STATE = Hopper.States.FEEDING;
+      Hood.STATE = Hood.States.ALIGNING;
 
-      if(kP != adjustedkP || kI != adjustedkI || kD != adjustedkD){
-        kP = adjustedkP;
-        kI = adjustedkI;
-        kD = adjustedkD;
+      shooter.setSpeed(-1.0);
 
-        controller.setPID(kP, kI, kD);
-      }
+      shooterData.updateEntry("Velocity", shooter.getVelocity());
 
-      setpoint = adjustedSetpoint;
-
-      controller.setSetpoint(setpoint);
-
-      shooterData.updateEntry("Setpoint", setpoint);
-
-      shooterPower = controller.calculate(shooter.getVelocity());
-
-      shooterData.updateEntry("PID Output", shooterPower);
-      shooterData.updateEntry("Error", controller.getPositionError());
-
-      shooter.setSpeed(shooterPower);
-
-      if(Math.abs(controller.getPositionError()) < 300.0){
+      if(shootTimer.get() > 2.5){
         Shooter.STATE = Shooter.States.SHOOTING;
       }
 
@@ -108,18 +71,13 @@ public class SetShooter extends CommandBase {
 
       Hopper.STATE = Hopper.States.FEEDING;
 
-      shooterData.updateEntry("Setpoint", setpoint);
+      shooter.setSpeed(-1.0);
 
-      shooterPower = controller.calculate(shooter.getVelocity());
-
-      shooterData.updateEntry("PID Output", shooterPower);
-      shooterData.updateEntry("Error", controller.getPositionError());
-
-      shooter.setSpeed(shooterPower);
+      shooterData.updateEntry("Velocity", shooter.getVelocity());
 
       shooter.setKicker(1.0);
 
-      kickerTimer.reset();
+      shootTimer.reset();
 
     //---------------------------------------------------------------------------
     } else if(Shooter.STATE == Shooter.States.STOPPED){
@@ -127,8 +85,11 @@ public class SetShooter extends CommandBase {
       shooter.setSpeed(0.0);
       shooter.setKicker(0.0);
 
+      shootTimer.reset();
+
       if(lastPressed){
         Hopper.STATE = Hopper.States.STOPPED;
+        Hood.STATE = Hood.States.RETRACTED;
       }
 
       if(pressed){
@@ -145,9 +106,7 @@ public class SetShooter extends CommandBase {
 
 
     shooterData.updateEntry("Velocity", shooter.getVelocity());
-    shooterData.updateEntry("Power", shooterPower);
     shooterData.updateEntry("State", Shooter.STATE.toString());
-    
   }
 
   // Called once the command ends or is interrupted.
@@ -161,3 +120,8 @@ public class SetShooter extends CommandBase {
     return false;
   }
 }
+/* Ansh: Hi i'm gonna run some tests since you aren't here (6:06pm 11/13/2021)
+...
+man this is tiring*
+...
+nevermind I have no idea how this wiring works so -\_(;/)_/-*/

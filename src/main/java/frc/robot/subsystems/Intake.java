@@ -4,16 +4,13 @@
 
 package frc.robot.subsystems;
 
-import java.util.concurrent.CopyOnWriteArrayList;
-
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
-import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Shuphlebord;
 import frc.robot.TabData;
-import frc.robot.Constants.IntakeConstants;;
+import frc.robot.Constants.IntakeConstants;
 
 public class Intake extends SubsystemBase {
   /** Creates a new Intake. */
@@ -29,7 +26,7 @@ public class Intake extends SubsystemBase {
 
     cylinder = new Solenoid(IntakeConstants.cylinder);
 
-    setCylinder(true);
+    retract();
   }
 
 
@@ -43,9 +40,15 @@ public class Intake extends SubsystemBase {
   }
 
 
-  public void setCylinder(boolean mode){
+  public void extend(){
 
-    cylinder.set(mode);
+    cylinder.set(true);
+
+  }
+
+  public void retract(){
+
+    cylinder.set(false);
 
   }
 
@@ -70,6 +73,5 @@ public class Intake extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    getCurrentDraw();
   }
 }

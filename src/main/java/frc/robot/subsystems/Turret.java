@@ -18,9 +18,9 @@ import frc.robot.TabData;
 public class Turret extends SubsystemBase {
   /** Creates a new Turret. */
 
-  public static enum States {ALIGNING, MANUAL}
+  public static enum States {LL_ALIGNING, ODO_ALIGNING, MANUAL}
 
-  public static States STATE = States.MANUAL;
+  public static States STATE = States.LL_ALIGNING;
 
   WPI_TalonSRX turret;
 
@@ -30,7 +30,7 @@ public class Turret extends SubsystemBase {
   double gearRatio = (24.0 / 150.0) * (25.0 / 34.0);
 
   public double maxDegrees = 140.0;//ticksToDegrees(maxEncoderTicks);
-  public double minDegrees = -160.0;//ticksToDegrees(minEncoderTicks);
+  public double minDegrees = -20.0;//ticksToDegrees(minEncoderTicks);
 
   public Turret() {
     turret = new WPI_TalonSRX(TurretConstants.turret);
@@ -87,7 +87,7 @@ public class Turret extends SubsystemBase {
   public double getTicks(){
     return encoder.get();
   }
-  
+
 
   public double getAngleToGoal(Pose2d robotPose){
 
